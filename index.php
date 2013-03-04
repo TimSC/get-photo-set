@@ -23,15 +23,19 @@ if($photoset_id === NULL)
 }
 else
 {
+	$data = $f->photosets_getPhotos($photoset_id);
+	if($data === false) exit("Error getting photoset");
+
 	$zip = new ZipArchive();
 	//create the file and throw the error if unsuccessful
-	$archFina = uniqid().".zip";
+	$archFina = $photoset_id.".zip";
+	if(!file_exists($archFina))
+	{
 	if ($zip->open($archFina, ZIPARCHIVE::CREATE )!==TRUE)
 	{
 		exit("cannot open <$archFina>\n");
 	}
 
-	$data = $f->photosets_getPhotos($photoset_id);
 	foreach($data['photoset']['photo'] as $photo)
 	{
 		print_r(utf8_decode($photo['title']));
@@ -42,10 +46,12 @@ else
 		$url = NULL;
 		foreach($sizes as $size)
 		{
-			if($size['label'] == "Original") $url = $size['source'];
+			if($size['label'] == "Original") $url = $size['source'];			
 		}
 		if($url!==NULL)
 		{
+			$ext = pathinfo($url, PATHINFO_EXTENSION);
+
 		    // create curl resource
 		    $ch = curl_init();
 
@@ -59,9 +65,9 @@ else
 		    $output = curl_exec($ch);
 
 		    // close curl resource to free up system resources
-		    curl_close($ch);      
+		    curl_close($ch);
 
-			echo "Add result:".$zip->addFromString(utf8_decode($photo['title']), $output)."<br/>";
+			echo "Add result:".$zip->addFromString(utf8_decode($photo['title']).".".$ext, $output)."<br/>";
 		}
 
 		echo '<br/>';
@@ -69,9 +75,9 @@ else
 	}
 
 	echo "Closing archive:".$zip->close()."<br/>";
-
+	
 	echo "All done!<br/>";
-
+	}
 	echo "<a href=\"".$archFina."\">Download</a>";
 	flush();
 }
