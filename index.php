@@ -13,52 +13,69 @@ if(isset($_GET['photoset_id']))
 else
 	$photoset_id = NULL;
 
-
 if($photoset_id === NULL)
 {
 	$data = $f->photosets_getList($user_id);
 	foreach($data['photoset'] as $photoset)
 	{
-		//print_r($photoset);
 		echo "<a href=\"?photoset_id=".$photoset['id']."\">".$photoset['title']."</a><br/>";
-
-
 	}
 }
 else
 {
+	$zip = new ZipArchive();
+	//create the file and throw the error if unsuccessful
+	$archFina = uniqid().".zip";
+	if ($zip->open($archFina, ZIPARCHIVE::CREATE )!==TRUE)
+	{
+		exit("cannot open <$archFina>\n");
+	}
+
 	$data = $f->photosets_getPhotos($photoset_id);
-	//print_r($data['photoset']['photo']);
 	foreach($data['photoset']['photo'] as $photo)
 	{
-	print_r(utf8_decode($photo['title']));
-	echo '<br/>';
+		print_r(utf8_decode($photo['title']));
+		echo '<br/>';
 
-	$sizes = $f->photos_getSizes($photo['id']);
+		$sizes = $f->photos_getSizes($photo['id']);
 
-	foreach($sizes as $size)
-	{
-		if($size['label'] == "Original") echo $size['source'];
+		$url = NULL;
+		foreach($sizes as $size)
+		{
+			if($size['label'] == "Original") $url = $size['source'];
+		}
+		if($url!==NULL)
+		{
+		    // create curl resource
+		    $ch = curl_init();
+
+		    // set url
+		    curl_setopt($ch, CURLOPT_URL, $url);
+
+		    //return the transfer as a string
+		    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+		    // $output contains the output string
+		    $output = curl_exec($ch);
+
+		    // close curl resource to free up system resources
+		    curl_close($ch);      
+
+			echo "Add result:".$zip->addFromString(utf8_decode($photo['title']), $output)."<br/>";
+		}
+
+		echo '<br/>';
+		flush();
 	}
 
-	echo '<br/>';
-	}
+	echo "Closing archive:".$zip->close()."<br/>";
 
+	echo "All done!<br/>";
+
+	echo "<a href=\"".$archFina."\">Download</a>";
+	flush();
 }
 
-
-
-
-
-/*foreach ($recent['photos'] as $photo) {
-    $owner = $f->people_getInfo($photo['owner']);
-    echo "<a href='http://www.flickr.com/photos/" . $photo['owner'] . "/" . $photo['id'] . "/'>";
-    echo $photo['title'];
-    echo "</a> Owner: ";
-    echo "<a href='http://www.flickr.com/people/" . $photo['owner'] . "/'>";
-    echo $owner['username'];
-    echo "</a><br>";
-}*/
 
 
 ?>
