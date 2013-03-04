@@ -35,6 +35,7 @@ else
 	{
 		exit("cannot open <$archFina>\n");
 	}
+	$tmpFinas = array();
 
 	foreach($data['photoset']['photo'] as $photo)
 	{
@@ -44,6 +45,7 @@ else
 		$sizes = $f->photos_getSizes($photo['id']);
 
 		$url = NULL;
+		
 		foreach($sizes as $size)
 		{
 			if($size['label'] == "Original") $url = $size['source'];			
@@ -52,22 +54,35 @@ else
 		{
 			$ext = pathinfo($url, PATHINFO_EXTENSION);
 
-		    // create curl resource
-		    $ch = curl_init();
+			if(1)
+			{
+				// create curl resource
+				$ch = curl_init();
 
-		    // set url
-		    curl_setopt($ch, CURLOPT_URL, $url);
+				// set url
+				curl_setopt($ch, CURLOPT_URL, $url);
 
-		    //return the transfer as a string
-		    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+				//return the transfer as a string
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-		    // $output contains the output string
-		    $output = curl_exec($ch);
+				// $output contains the output string
+				$output = curl_exec($ch);
 
-		    // close curl resource to free up system resources
-		    curl_close($ch);
+				// close curl resource to free up system resources
+				curl_close($ch);
+			}
+			else
+				$output = "testmode";
 
-			echo "Add result:".$zip->addFromString(utf8_decode($photo['title']).".".$ext, $output)."<br/>";
+			$tmpFina = $photo['id'].".".$ext;
+			$tmpFi = fopen($tmpFina,"wb");
+			fwrite($tmpFi, $output);
+			fclose($tmpFi);
+
+			echo "Add result:".$zip->addFile($tmpFina, utf8_decode($photo['title']).".".$ext)."<br/>";
+			//echo "Add result:".$zip->addFromString(utf8_decode($photo['title']).".".$ext, $output)."<br/>";
+
+			array_push($tmpFinas, $tmpFina);
 		}
 
 		echo '<br/>';
@@ -76,6 +91,11 @@ else
 
 	echo "Closing archive:".$zip->close()."<br/>";
 	
+	foreach($tmpFinas as $tmpFina)
+	{
+		unlink($tmpFina);
+	}
+
 	echo "All done!<br/>";
 	}
 	echo "<a href=\"".$archFina."\">Download</a>";
