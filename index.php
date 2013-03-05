@@ -14,6 +14,7 @@ else
 	$photoset_id = NULL;
 
 $targetSize = "Large";
+echo "<h1>".$user_id."</h1>\n";
 
 if($photoset_id === NULL)
 {
@@ -22,6 +23,15 @@ if($photoset_id === NULL)
 	{
 		echo "<a href=\"?photoset_id=".$photoset['id']."\">".$photoset['title']."</a><br/>";
 	}
+?>
+
+<form method="GET">
+Flickr NSID: <input type="text" name="user_id"><br/>
+<input type="submit" value="Get Photosets">
+</form> 
+
+<?
+	
 }
 else
 {
