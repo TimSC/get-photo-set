@@ -13,6 +13,8 @@ if(isset($_GET['photoset_id']))
 else
 	$photoset_id = NULL;
 
+$targetSize = "Large";
+
 if($photoset_id === NULL)
 {
 	$data = $f->photosets_getList($user_id);
@@ -28,7 +30,7 @@ else
 
 	$zip = new ZipArchive();
 	//create the file and throw the error if unsuccessful
-	$archFina = $photoset_id.".zip";
+	$archFina = $photoset_id.$targetSize.".zip";
 	if(!file_exists($archFina))
 	{
 	if ($zip->open($archFina, ZIPARCHIVE::CREATE )!==TRUE)
@@ -36,6 +38,7 @@ else
 		exit("cannot open <$archFina>\n");
 	}
 	$tmpFinas = array();
+	$count = 0;
 
 	foreach($data['photoset']['photo'] as $photo)
 	{
@@ -45,11 +48,23 @@ else
 		$sizes = $f->photos_getSizes($photo['id']);
 
 		$url = NULL;
-		
+		$foundSize = NULL;
+
 		foreach($sizes as $size)
 		{
-			if($size['label'] == "Original") $url = $size['source'];			
+			if($size['label'] == "Original" and $url === NULL)
+			{
+				$url = $size['source'];
+				$foundSize = $size['label'];
+			}
+			if($size['label'] == $targetSize)
+			{
+				echo "x<br/>";
+				$url = $size['source'];
+				$foundSize = $size['label'];
+			}
 		}
+
 		if($url!==NULL)
 		{
 			$ext = pathinfo($url, PATHINFO_EXTENSION);
@@ -74,7 +89,7 @@ else
 			else
 				$output = "testmode";
 
-			$tmpFina = $photo['id'].".".$ext;
+			$tmpFina = sprintf("%05d",$count)."-".$photo['id'].".".$ext;
 			$tmpFi = fopen($tmpFina,"wb");
 			fwrite($tmpFi, $output);
 			fclose($tmpFi);
@@ -83,6 +98,7 @@ else
 			//echo "Add result:".$zip->addFromString(utf8_decode($photo['title']).".".$ext, $output)."<br/>";
 
 			array_push($tmpFinas, $tmpFina);
+			$count ++;
 		}
 
 		echo '<br/>';
