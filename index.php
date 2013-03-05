@@ -59,7 +59,6 @@ else
 			}
 			if($size['label'] == $targetSize)
 			{
-				echo "x<br/>";
 				$url = $size['source'];
 				$foundSize = $size['label'];
 			}
@@ -94,8 +93,8 @@ else
 			fwrite($tmpFi, $output);
 			fclose($tmpFi);
 
-			echo "Add result:".$zip->addFile($tmpFina, utf8_decode($photo['title']).".".$ext)."<br/>";
-			//echo "Add result:".$zip->addFromString(utf8_decode($photo['title']).".".$ext, $output)."<br/>";
+			$archImgName = sprintf("%05d",$count)."-".utf8_decode($photo['title']).".".$ext;
+			echo "Add result:".$zip->addFile($tmpFina, $archImgName)."<br/>";
 
 			array_push($tmpFinas, $tmpFina);
 			$count ++;
