@@ -21,7 +21,7 @@ if($photoset_id === NULL)
 	$data = $f->photosets_getList($user_id);
 	foreach($data['photoset'] as $photoset)
 	{
-		echo "<a href=\"?photoset_id=".$photoset['id']."\">".$photoset['title']."</a><br/>";
+		echo "<a href=\"?photoset_id=".$photoset['id']."\">".$photoset['title']['_content']."</a><br/>";
 	}
 ?>
 
@@ -30,7 +30,7 @@ Flickr NSID: <input type="text" name="user_id"><br/>
 <input type="submit" value="Get Photosets">
 </form> 
 
-<?
+<?php
 	
 }
 else
