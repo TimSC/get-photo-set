@@ -1,7 +1,14 @@
 <?php
-
+session_start();
+//session_destroy();
 require_once("phpflickr/phpFlickr.php");
-$f = new phpFlickr("c3a0649ccb823d20f687513db8c186e1");
+require_once("config.php");
+$f = new phpFlickr($api_key, $api_secret);
+
+if(isset($_GET['frob']))
+{
+	$f->auth_getToken($_GET['frob']);
+}
 
 if(isset($_GET['user_id']))
 	$user_id = $_GET['user_id'];
@@ -31,7 +38,16 @@ Flickr NSID: <input type="text" name="user_id"><br/>
 </form> 
 
 <?php
-	
+
+if($auth_enable)
+{
+?>
+<a href="auth.php">Authenticate</a>
+<?php
+}
+
+print_r($_SESSION);
+
 }
 else
 {
